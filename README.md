@@ -1,4 +1,4 @@
-# Anime Subtitle Extractor
+# Anime Subtitle Extractor for ASS/SSA formats
 
 ## Overview
 
