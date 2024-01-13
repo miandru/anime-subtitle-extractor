@@ -20,7 +20,7 @@ The Anime Subtitle Extractor is a bash script designed to automate the extractio
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/anime-subtitle-extractor.git
+   git clone https://github.com/miandru/anime-subtitle-extractor.git
    ```
 
 2. Change into the repository directory:
