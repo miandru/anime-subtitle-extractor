@@ -2,17 +2,41 @@
 
 # Replace with your actual root directory path
 rootDirectory="/data/media/anime"
+processedShowsFile="processed_shows.txt"
 logFile="ffmpeg_log.txt"
 maxProcesses=4  # Number of files to process concurrently
 
 # Set increased values for the 'analyzeduration' and 'probesize' options
 analyzeduration_value="10000000" # Adjust as needed
 probesize_value="10000000"       # Adjust as needed
-
 # Function to process a show and its seasons
+forceProcessing="false"
+
+# Check for the --force option
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --force)
+            forceProcessing="true"
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
 process_show() {
     local showPath="$1"
-    echo "Processing show: $(basename "$showPath")"
+    local showName=$(basename "$showPath")
+
+    # Check if the show has been processed before
+    if [ "$forceProcessing" != "true" ] && grep -Fq "$showName" "$processedShowsFile"; then
+        echo "Show $showName already processed. Skipping."
+        return
+    fi
+
+    echo "Processing show: $showName"
 
     # Loop through each season in the show
     for seasonPath in "$showPath"/*; do
@@ -21,6 +45,9 @@ process_show() {
             process_season "$seasonPath"
         fi
     done
+
+    # Mark the show as processed
+    echo "$showName" >> "$processedShowsFile"
 }
 
 # Function to process a season and its episodes
@@ -42,7 +69,6 @@ process_season() {
     # Process episodes concurrently
     process_episodes_concurrently "${episodeFiles[@]}"
 }
-
 # Function to process episodes concurrently
 process_episodes_concurrently() {
     local episodes=("$@")
@@ -144,3 +170,5 @@ for showPath in "$rootDirectory"/*; do
         process_show "$showPath"
     fi
 done
+# Remove duplicate entries from processed_shows.txt
+awk '!seen[$0]++' "$processedShowsFile" > "$processedShowsFile.tmp" && mv "$processedShowsFile.tmp" "$processedShowsFile"
