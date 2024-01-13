@@ -3,6 +3,7 @@
 # Replace with your actual root directory path
 rootDirectory="/data/media/anime"
 logFile="ffmpeg_log.txt"
+maxProcesses=4  # Number of files to process concurrently
 
 # Set increased values for the 'analyzeduration' and 'probesize' options
 analyzeduration_value="10000000" # Adjust as needed
@@ -27,11 +28,38 @@ process_season() {
     local seasonPath="$1"
     echo "  Processing season: $(basename "$seasonPath")"
 
-    # Loop through all .mkv files in the season
+    # Array to store episode files
+    episodeFiles=()
+
+    # Loop through all .mkv files in the season and store them in the array
     for inputFile in "$seasonPath"/*.mkv; do
         # Check if the file is an actual file
         if [ -f "$inputFile" ]; then
-            process_episode "$inputFile"
+            episodeFiles+=("$inputFile")
+        fi
+    done
+
+    # Process episodes concurrently
+    process_episodes_concurrently "${episodeFiles[@]}"
+}
+
+# Function to process episodes concurrently
+process_episodes_concurrently() {
+    local episodes=("$@")
+    local episodeCount=${#episodes[@]}
+    local processCount=0
+    local pidArray=()
+
+    for ((i = 0; i < episodeCount; i++)); do
+        process_episode "${episodes[i]}" &
+        pidArray+=($!)
+
+        # Limit the number of concurrent processes
+        processCount=$((processCount + 1))
+        if [ "$processCount" -eq "$maxProcesses" ] || [ "$i" -eq "$((episodeCount - 1))" ]; then
+            wait "${pidArray[@]}"
+            processCount=0
+            pidArray=()
         fi
     done
 }
@@ -56,9 +84,10 @@ process_episode() {
 
         # Check if the subtitle format is ASS or SSA (you can add more formats if needed)
         if [ "$format" == "ASS" ] || [ "$format" == "SSA" ]; then
+            # Always add the subtitle information to the array
             subtitleInfoArray+=("$streamOrder" "$format" "$title" "$language")
         else
-            echo "      Skipping subtitle track with format: $format"
+            echo -e "      \e[93mSkipping subtitle track with format: $format\e[0m"  # Yellow color
         fi
     done <<< "$(echo "$mediainfoOutput" | jq -c '.media.track[] | select(.["@type"] == "Text") | { StreamOrder: .StreamOrder, Format: .Format, Title: .Title, Language: .Language }')"
 
@@ -69,28 +98,38 @@ process_episode() {
         title="${subtitleInfoArray[i + 2]}"
         language="${subtitleInfoArray[i + 3]}"
 
-        # Construct the output filename using the subtitle title and language
-        outputFileName=$(basename "${inputFile%.*}.$title.$language.ass")
+        # Sanitize the title by replacing '/' with underscores
+        sanitizedTitle=$(echo "$title" | sed 's/\//_/g')
+
+        # Construct the output filename using the sanitized subtitle title and language
+        outputFileName=""
+        if [ "$title" != "null" ]; then
+            outputFileName=$(basename "${inputFile%.*}.$sanitizedTitle.$language.ass")
+        else
+            outputFileName=$(basename "${inputFile%.*}.$language.ass")
+        fi
 
         # Check if the file already exists, and if so, skip to the next subtitle stream
         if [ -e "$seasonPath/$outputFileName" ]; then
-            echo "      Skipping existing subtitle file: $outputFileName"
+            echo -e "      \e[93mSkipping existing subtitle file: $outputFileName\e[0m"  # Yellow color
             continue
         fi
 
         # Debug information
-        echo "      Parsed subtitle JSON data: { StreamOrder: $streamOrder, Format: $format, Title: $title, Language: $language }"
-        echo "      Running ffmpeg command:"
-        echo "      ffmpeg -analyzeduration $analyzeduration_value -probesize $probesize_value -i $inputFile -copyts -map 0:$streamOrder -an -vn -c:s copy $seasonPath/$outputFileName >> $logFile 2>&1"
+        echo -e "      Episode: \e[96m$(basename "$inputFile")\e[0m"  # Cyan color
+        echo -e "      Parsed subtitle JSON data: { StreamOrder: $streamOrder, Format: $format, Title: $title, Language: $language }"
+        echo -e "      Constructed output filename: \e[92m$outputFileName\e[0m"  # Green color
+        echo -e "      Running ffmpeg command:"
+        echo -e "      ffmpeg -analyzeduration $analyzeduration_value -probesize $probesize_value -i $inputFile -copyts -map 0:$streamOrder -an -vn -c:s copy $seasonPath/$outputFileName >> $logFile 2>&1"
 
         # Run ffmpeg command to extract the subtitle and log the output
-        ffmpeg -analyzeduration "$analyzeduration_value" -probesize "$probesize_value" -i "$inputFile" -copyts -map 0:"$streamOrder" -an -vn -c:s copy "$seasonPath/$outputFileName" >> "$logFile" 2>&1
+        ffmpeg -analyzeduration "$analyzeduration_value" -probesize "$probesize_value" -i "$inputFile" -copyts -map 0:"$streamOrder" -an -vn -c:s copy -threads 12 "$seasonPath/$outputFileName" >> "$logFile" 2>&1
 
         # Check the exit status of the ffmpeg command
         if [ $? -eq 0 ]; then
-            echo "      Subtitle extraction successful"
+            echo -e "      \e[92mSubtitle extraction successful\e[0m"  # Green color
         else
-            echo "      Subtitle extraction failed"
+            echo -e "      \e[91mSubtitle extraction failed\e[0m"  # Red color
         fi
     done
 
