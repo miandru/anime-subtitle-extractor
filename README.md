@@ -1,4 +1,4 @@
-# Anime Subtitle Extractor for ASS/SSA formats
+# Anime Subtitle Extractor for ASS/SSA Formats
 
 ## Overview
 
@@ -17,29 +17,29 @@ The Anime Subtitle Extractor is a bash script designed to automate the extractio
 
 ## Usage
 
-1. Clone the repository:
+1. **Clone the repository:**
 
    ```bash
    git clone https://github.com/miandru/anime-subtitle-extractor.git
-   ```
 
-2. Change into the repository directory:
+
+2. **Change into the repository directory:**
 
    ```bash
    cd anime-subtitle-extractor
    ```
 
-3. Make the script executable:
+3. **Make the script executable:**
 
    ```bash
    chmod +x anime_subtitle_extractor.sh
    ```
 
-4. Edit the script to set the correct values for `rootDirectory`, `analyzeduration_value`, `probesize_value`, and other parameters according to your setup.
-   This is the expected folder structure `/data/media/anime/season/episode.mkv`
+4. **Edit the script:**
 
+   Set the correct values for `rootDirectory`, `analyzeduration_value`, `probesize_value`, and other parameters according to your setup. The expected folder structure is `/data/media/anime/season/episode.mkv`.
 
-6. Run the script:
+6. **Run the script:**
 
    ```bash
    ./anime_subtitle_extractor.sh
@@ -57,9 +57,10 @@ The Anime Subtitle Extractor is a bash script designed to automate the extractio
 ## Notes
 
 - Make sure to have the required dependencies (ffmpeg and mediainfo) installed on your system.
-
 - The script assumes a directory structure where shows contain seasons, and each season contains episodes.
-
 - Currently, the script is configured to extract subtitles in ASS or SSA format. You can customize the script to support additional subtitle formats if needed.
 
-Feel free to contribute to the project or report any issues [here](https://github.com/yourusername/anime-subtitle-extractor/issues). Happy anime subtitle extracting!
+Feel free to contribute to the project or report any issues [here](https://github.com/miandru/anime-subtitle-extractor/issues). Happy anime subtitle extracting!
+```
+
+Feel free to adjust it further based on your preferences. If you have any specific requests or additional information you'd like to include, let me know!
