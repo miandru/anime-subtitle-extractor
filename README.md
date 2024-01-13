@@ -61,6 +61,3 @@ The Anime Subtitle Extractor is a bash script designed to automate the extractio
 - Currently, the script is configured to extract subtitles in ASS or SSA format. You can customize the script to support additional subtitle formats if needed.
 
 Feel free to contribute to the project or report any issues [here](https://github.com/miandru/anime-subtitle-extractor/issues). Happy anime subtitle extracting!
-```
-
-Feel free to adjust it further based on your preferences. If you have any specific requests or additional information you'd like to include, let me know!
