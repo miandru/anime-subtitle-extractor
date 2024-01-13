@@ -56,7 +56,12 @@ process_episode() {
 
         # Check if the subtitle format is ASS or SSA (you can add more formats if needed)
         if [ "$format" == "ASS" ] || [ "$format" == "SSA" ]; then
-            subtitleInfoArray+=("$streamOrder" "$format" "$title" "$language")
+            # Check if the subtitle title is null, and skip the track if it is
+            if [ "$title" != "null" ]; then
+                subtitleInfoArray+=("$streamOrder" "$format" "$title" "$language")
+            else
+                echo "      Skipping subtitle track with null title"
+            fi
         else
             echo "      Skipping subtitle track with format: $format"
         fi
@@ -70,7 +75,12 @@ process_episode() {
         language="${subtitleInfoArray[i + 3]}"
 
         # Construct the output filename using the subtitle title and language
-        outputFileName=$(basename "${inputFile%.*}.$title.$language.ass")
+        outputFileName=""
+        if [ "$title" != "null" ]; then
+            outputFileName=$(basename "${inputFile%.*}.$title.$language.ass")
+        else
+            outputFileName=$(basename "${inputFile%.*}.$language.ass")
+        fi
 
         # Check if the file already exists, and if so, skip to the next subtitle stream
         if [ -e "$seasonPath/$outputFileName" ]; then
