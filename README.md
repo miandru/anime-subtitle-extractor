@@ -36,8 +36,10 @@ The Anime Subtitle Extractor is a bash script designed to automate the extractio
    ```
 
 4. Edit the script to set the correct values for `rootDirectory`, `analyzeduration_value`, `probesize_value`, and other parameters according to your setup.
+   This is the expected folder structure `/data/media/anime/season/episode.mkv`
 
-5. Run the script:
+
+6. Run the script:
 
    ```bash
    ./anime_subtitle_extractor.sh
