@@ -44,8 +44,11 @@ The Anime Subtitle Extractor is a bash script designed to automate the extractio
    ```bash
    ./anime_subtitle_extractor.sh
    ```
+      ```bash
+   ./anime_subtitle_extractor.sh --force
+   ```
 
-   The script will process each anime show, season, and episode within the specified root directory, extracting subtitles from Matroska files.
+   The script will process each anime show, season, and episode within the specified root directory, extracting subtitles from Matroska files. It caches already processed files, if you want to process the entire library use the `--force` option
 
 ## Configuration
 
