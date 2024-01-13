@@ -1,7 +1,3 @@
-Certainly! Here's a simple README file that you can use for your GitHub repository:
-
----
-
 # Anime Subtitle Extractor
 
 ## Overview
